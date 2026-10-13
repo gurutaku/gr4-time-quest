@@ -122,7 +122,7 @@
     const preserveFeedback = options.preserveFeedback === true;
     builder.challenge++;
     builder.target=targets[(builder.challenge-1)%targets.length];
-    builder.current=from12(6,0);
+    builder.current=from12(12,0);
     builder.checked=false;
     $('checkBuilder').disabled=false;
     $('checkBuilder').textContent='Check my clock ✓';
@@ -206,7 +206,7 @@
     };
     svg.addEventListener('pointerdown',e=>{
       if(svg.dataset.interactive!=='true')return;
-      const p=getPoint(e),r=Math.hypot(p.x-150,p.y-150);
+      const p=getPoint(e);
       const distanceToHand=(name)=>{
         const line=svg.querySelector(`[data-hand="${name}"]`);
         if(!line)return Infinity;
@@ -220,9 +220,12 @@
         return Math.hypot(p.x-(sx+t*vx),p.y-(sy+t*vy));
       };
       const hourDistance=distanceToHand('hour'),minuteDistance=distanceToHand('minute');
-      active=Math.min(hourDistance,minuteDistance)<=22
-        ? (hourDistance<=minuteDistance?'hour':'minute')
-        : (r>76?'minute':'hour');
+      const nearestDistance=Math.min(hourDistance,minuteDistance);
+      // Start a drag only when the pointer is near a visible clock hand.
+      // Never guess a hand based on how far from the centre the click occurred.
+      const hitRadius=e.pointerType==='touch'?20:15;
+      if(nearestDistance>hitRadius)return;
+      active=hourDistance<=minuteDistance?'hour':'minute';
       activeClockHand=active;
       lastMinuteAngle=active==='minute'?(((getTime()%60)+60)%60)*6:null;
       svg.setPointerCapture?.(e.pointerId);
