@@ -85,8 +85,8 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  // Some optional stat elements may not exist in every page layout.
-  function setTextIfPresent(id, value) { const el = $(id); if (el) el.textContent = value; }
+  // Some layouts omit optional builder stat elements.
+  const setTextIfPresent = (id, value) => { const el = $(id); if (el) el.textContent = value; };
   const fmt = (total) => { total = ((Math.round(total) % 1440) + 1440) % 1440; const h24 = Math.floor(total/60), m = total%60, h = h24%12 || 12; return `${h}:${String(m).padStart(2,'0')}`; };
   const fmtAmPm = (total) => {total=((Math.round(total)%1440)+1440)%1440;const h24=Math.floor(total/60),m=total%60,h=h24%12||12;return `${h}:${String(m).padStart(2,'0')} ${h24<12?'AM':'PM'}`;};
   const from12 = (h,m) => ((h%12)*60 + m) % 1440;
@@ -117,10 +117,9 @@
     svg.innerHTML=s;svg.setAttribute('aria-label',`Analog clock${interactive?' you can adjust':''}${interactive?'.':' showing '+fmt(minutes)}.`);svg.dataset.interactive=interactive?'true':'false';
   }
   let builder={target:180,current:720,solved:0,tries:0,run:0,bestRun:0,challenge:0,earned:0,checked:false};
-  let builderAdvanceTimer=null;
   const targets=[from12(3,0),from12(6,30),from12(9,15),from12(2,45),from12(7,20),from12(10,55),from12(1,35),from12(4,50),from12(8,10),from12(11,40)];
-  function newBuilder(){
-    if(builderAdvanceTimer){clearTimeout(builderAdvanceTimer);builderAdvanceTimer=null;}
+  function newBuilder(options={}){
+    const preserveFeedback = options.preserveFeedback === true;
     builder.challenge++;
     builder.target=targets[(builder.challenge-1)%targets.length];
     builder.current=from12(12,0);
@@ -128,9 +127,16 @@
     $('checkBuilder').disabled=false;
     $('checkBuilder').textContent='Check my clock ✓';
     $('builderTarget').textContent=fmt(builder.target);
-    $('builderHint').textContent=builder.challenge<3?'Start with the hour hand, then set the minutes.':'Look closely at both hands. You can do it!';
-    $('builderFeedback').className='feedback';
-    $('builderFeedback').textContent='';
+    $('builderHint').textContent=preserveFeedback
+      ? 'Great job! A new challenge is ready. Set the clock to match the time shown.'
+      : (builder.challenge<3?'Start with the hour hand, then set the minutes.':'Look closely at both hands. You can do it!');
+    if (preserveFeedback) {
+      // Keep the success message visible while the next target is already shown.
+      $('builderFeedback').className='feedback show good';
+    } else {
+      $('builderFeedback').className='feedback';
+      $('builderFeedback').textContent='';
+    }
     updateBuilderClock();
     setTextIfPresent('builderDone',builder.solved);
     setTextIfPresent('builderRun',builder.run);
@@ -154,15 +160,14 @@
       builder.earned++;
       save.stars++;
       fb.className='feedback show good';
-      fb.textContent='🎉 Perfect timing! +1 star! Next challenge coming up…';
+      fb.textContent='🎉 Perfect timing! +1 star! Your next challenge is ready.';
       setTextIfPresent('builderDone',builder.solved);
       setTextIfPresent('builderRun',builder.run);
       $('builderStars').textContent=builder.earned;
-      $('builderHint').textContent='Great job! Get ready for the next time challenge.';
       updateHeader();
-      $('checkBuilder').textContent='Correct! ✓';
-      $('checkBuilder').disabled=true;
-      builderAdvanceTimer=setTimeout(()=>newBuilder(),1200);
+      // Advance immediately so the next challenge cannot be blocked by a timer
+      // or an exception in a delayed callback. Keep the success message visible.
+      newBuilder({preserveFeedback:true});
     }else{
       builder.run=0;
       fb.className='feedback show try';
