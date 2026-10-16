@@ -143,6 +143,34 @@
       font-weight: 750
     }
 
+    .games-hub-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 14px;
+      border: 1px solid #f2c9dd;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #fff5cf, #ffe8f1);
+      box-shadow: 0 3px 0 #ecc8dc;
+      color: #694978;
+      font-size: 14px;
+      font-weight: 850;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: transform .12s, box-shadow .12s
+    }
+
+    .games-hub-link:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 0 #ecc8dc
+    }
+
+    .games-hub-link:focus-visible {
+      outline: 3px solid #ffb84d;
+      outline-offset: 3px
+    }
+
     .hero {
       position: relative;
       overflow: hidden;
@@ -1051,7 +1079,11 @@
         margin-top: 22px
       }
 
-      .top-actions .quiet-btn {
+      .games-hub-link {
+        padding: 9px 11px
+      }
+
+      .games-hub-label {
         display: none
       }
 
@@ -1119,8 +1151,10 @@
         </div>
       </div>
       <div class="top-actions">
-        <div class="pill star" title="Stars earned"><span>⭐</span><span id="starCount">0</span></div><button
-          class="quiet-btn" id="homeBtn">⌂ Home</button>
+        <div class="pill star" title="Stars earned"><span>⭐</span><span id="starCount">0</span></div>
+        <a class="games-hub-link" href="https://gurutaku.ca/coolgames/" aria-label="Back to Gurutaku Cool Games"
+          title="Back to Gurutaku Cool Games"><span aria-hidden="true">🎮</span><span class="games-hub-label">More
+            Games</span></a>
       </div>
     </header>
 
@@ -1345,7 +1379,7 @@
       }
       let toastTimer; function toast(message) { const t = $('toast'); t.textContent = message; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2100) }
       function showView(name) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); $(name + 'View').classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-      $('homeBtn').addEventListener('click', () => { stopQuizTimer(); showView('home'); updateHeader() }); document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { stopQuizTimer(); showView('home'); updateHeader() })); $('startBtn').addEventListener('click', () => startBuilder()); document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { if (b.dataset.mode === 'builder') startBuilder(); if (b.dataset.mode === 'quiz') startQuiz(); if (b.dataset.mode === 'detective') startDetective() }));
+      document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { stopQuizTimer(); showView('home'); updateHeader() })); $('startBtn').addEventListener('click', () => startBuilder()); document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { if (b.dataset.mode === 'builder') startBuilder(); if (b.dataset.mode === 'quiz') startQuiz(); if (b.dataset.mode === 'detective') startDetective() }));
 
       // Accessible SVG clock renderer; hands can be moved with pointer or control buttons.
       let activeClockHand = null;
